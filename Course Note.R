@@ -106,4 +106,44 @@ write.table(big_df, file = file, row.names = FALSE, col.names = TRUE, sep = "\t"
 system.time(fread(file)) #fread function can be used to read data.table, it is a drop in substitute for read.table but much more efficient
 system.time(read.table(file, header = TRUE, sep = "\t"))
 
+#SWIRL NOTES
+##Manipulating Data with dplyr
+
+#dplyr package installed
+library(dplyr)
+mydf <- read.csv(path2csv, stringsAsFactors = FALSE) #path2CSV was created automatically in swirl
+head(mydf)
+cran <- tbl_df(mydf) #load the data into what the package authors call a 'data frame tbl' or 'tbl_df'
+rm("mydf")
+cran #Main use is printing. Check this out
+ 
+ #dplyr supplies five 'verbs' that cover most fundamental data manipulation tasks: select(), filter(), arrange(), mutate(), and summarize().
+ #subsetting columns using select
+select(cran, ip_id, package, country) #Selects just these columns
+select(cran, r_arch:country) #selects all columns from r_arch to country, similar to operating on numbers 1:5
+select(cran, country:r_arch)
+select(cran, -time) #Removes time column
+
+ #Subsetting rows using filter
+filter(cran, package == "swirl") #Only swirl downloads
+filter(cran, r_version == "3.1.1", country == "US") #Can give multiple conditions comma seperated
+filter(cran, !is.na(r_version))
+
+ #Sorting using arrange
+cran2 <- select(cran, size:ip_id)
+arrange(cran2, ip_id) #Arrange in ascending order
+arrange(cran2, desc(ip_id)) #Descending ip_id order
+arrange(cran2, package, ip_id) #arranges first by package and then by ip_id
+arrange(cran2, country, desc(r_version), ip_id)
+
+cran3 <- select(cran, ip_id, package, size)
+mutate(cran3, size_mb = size / 2^20) #Creating a new column based on values of another column
+
+summarize(cran, avg_bytes = mean(size)) #collapses the entire data to show new value avg_bytes as calculated
+
+#Grouping and Chaingin with dplyr
+
+
+
+
  
