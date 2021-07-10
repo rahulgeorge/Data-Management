@@ -141,9 +141,29 @@ mutate(cran3, size_mb = size / 2^20) #Creating a new column based on values of a
 
 summarize(cran, avg_bytes = mean(size)) #collapses the entire data to show new value avg_bytes as calculated
 
-#Grouping and Chaingin with dplyr
+#Grouping and Chaining with dplyr
+by_package <- group_by(cran, package) #At the top of the output above, you'll see 'Groups: package', which tells us that this tbl has been grouped by the package variablw.
+                                        #Now any operation we apply to the grouped data will take place on a per package basis.
+summarise(by_package, mean(size)) #Summarise now gives mean for all the packages as it is grouped by package already
 
+ # You should also take a look at ?n and ?n_distinct, so
+ # that you really understand what is going on.
 
+pack_sum <- summarize(by_package,
+                      count = n(),
+                      unique = n_distinct(ip_id) ,
+                      countries = n_distinct(country),
+                      avg_bytes = mean(size))
 
+quantile(pack_sum$count, probs = 0.99) #Provides the top 1% 0.99 percetile of the downloaded packages based on count of download. Gives the values of count above which it is top 1%
+top_counts <- filter(pack_sum, count > 679) #Getting all the top ones.
+View(top_counts) #Provides a great view of the table
+top_counts_sorted <- arrange(top_counts, desc(count))
 
- 
+#Chaining using dplyr
+cran %>% #This operator is used to chain commands
+        select(ip_id, country, package, size) %>% #No need to provide the prior package into the argument. Operator facilitates that
+        mutate(size_mb = size / 2^20) %>%
+        filter(size_mb <= 0.5) %>%
+        arrange(desc(size_mb)) %>% 
+        print #Print doesnt need the function paranthesis in chaining
