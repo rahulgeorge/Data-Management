@@ -167,3 +167,123 @@ cran %>% #This operator is used to chain commands
         filter(size_mb <= 0.5) %>%
         arrange(desc(size_mb)) %>% 
         print #Print doesnt need the function paranthesis in chaining
+
+
+#Reading from MySQL
+
+library(RMySQL)
+ucscDB <- dbConnect(MySQL(), user="genome", host="genome-mysql.soe.ucsc.edu") #Got information from http://genome.ucsc.edu/goldenPath/help/mysql.html
+result <- dbGetQuery(ucscDB, "show databases;") #Connects to MySQL to send a query and sends the MySQL query to show all databases; in the server
+dbDisconnect(ucscDB) #Very important to disconnect
+
+hg19 <- dbConnect(MySQL(), user="genome", db = "hg19", host="genome-mysql.soe.ucsc.edu")
+allTables <- dbListTables(hg19) #All tables in DB
+length(allTables)
+allTables[1:5]
+
+dbListFields(hg19, "affyU133Plus2") #Checking for all the fields in affy.. table
+dbGetQuery(hg19, "select count(*) from affyU133Plus2") #Count of number of elements in the table. (Rows)\
+
+affyData <- dbReadTable(hg19, "affyU133Plus2")
+head(affyData)
+
+query <- dbSendQuery(hg19, "select * from affyU133Plus2 where misMatches between 1 and 3") #misMatches is a column in the table #Stored remotely at DB
+affyMis <- fetch(query) #Retrieves information from BD
+quantile(affyMis$misMatches)
+affyMisSmall <- fetch(query, n = 10) #Gets only a small set back using the same query we stored in the DB
+dbClearResult(query)
+dim(affyMisSmall)
+dbDisconnect(hg19)
+
+        #https://www.pantz.org/software/mysql/mysqlcommands.html
+        #https://www.r-bloggers.com/2011/08/mysql-and-r/
+
+
+
+#Reading from HDF5 - Hierarchical Data Format
+
+ #To install follow the following steps
+        # if (!requireNamespace("BiocManager", quietly = TRUE))
+        #         install.packages("BiocManager")
+        # BiocManager::install()
+ #BiocManager::install(rhdf5)
+
+library(rhdf5)
+created = h5createFile("example.h5") #Creating an HDF5 file
+created
+
+created = h5createGroup("example.h5", "foo") #Create groups inside the HDF5
+created = h5createGroup("example.h5", "baa")
+created = h5createGroup("example.h5", "foo/foobaa")
+h5ls("example.h5") #View contents of HDF5 file
+
+A = matrix(1:10, nr=5, nc=2)
+h5write(A, "example.h5", "foo/A") #Writes the matrix into the group foo
+B <- array(seq(0.1,2.0,by = 0.1),dim=c(5,2,2))
+attr(B, "scale") <- "litre"
+h5write(B, "example.h5", "foo/foobaa/B")
+h5ls("example.h5")
+
+df <- data.frame(1L:5L, seq(0,1,length.out=5), c("ab","cde","fghi","a","s"), stringsAsFactors = FALSE)
+h5write(df, "example.h5", "df") #Can pass a variable directly to the top group
+
+readA <- h5read("example.h5", "foo/A")
+readB <- h5read("example.h5","foo/foobaa/B")
+readdf <- h5read("example.h5", "df")
+readdf
+
+h5write(c(12,13,14),"example.h5","foo/A", index=list(1:3,1))
+h5read("example.h5","foo/A")
+
+
+#Reading Data from the Web
+con <- url("https://scholar.google.com/citations?user=HI-I6C0AAAAJ&hl=en")
+htmlCode =  readLines(con)
+close(con)
+htmlCode
+
+library(XML)
+library(RCurl)
+url <- getURL("https://scholar.google.com/citations?user=HI-I6C0AAAAJ&hl=en")
+html <- htmlTreeParse(url, useInternalNodes = TRUE)
+xpathSApply(html, "//title", xmlValue)
+xpathSApply(html, "//td[@id='gsc_a_ac gs_ibl']", xmlValue) #Not6 working for me
+
+ #Get from HTTR package
+library(httr)
+html2 <- GET("https://scholar.google.com/citations?user=HI-I6C0AAAAJ&hl=en")
+content2 <- content(html2, as = "text")
+parsedHtml <- htmlParse(content2, asText = TRUE)
+xpathApply(parsedHtml, "//title", xmlValue)
+
+pg1 <- GET("http://httpbin.org/basic-auth/user/passwd")
+pg1 #This wont as error code 401 as we didnt login
+
+pg2 <- GET("http://httpbin.org/basic-auth/user/passwd", authenticate("user","passwd"))
+pg2
+names(pg2)
+
+google <- handle("http://google.com") #Setting a handle
+pg1 <- GET(handle = google, path = "/")
+pg2 <- GET(handle = google, path = "search")
+
+
+#Reading Data from APIs
+
+        #Twitter Info - https://developer.twitter.com/en/docs/twitter-api/early-access
+        #API Key - 66hKsADgbVB2bLMIUbVfeTG3k
+        #API Secret - tkt5XXlnWqa2PvnGyMxBKsSwhK9PQFHov7fXknfqfppZ8gKnG9
+        #Bearer Token - AAAAAAAAAAAAAAAAAAAAAAtuRgEAAAAAIaMilMHo0u5pJ3fG2xJopGd8WgQ%3DZBAupmVNUmROrSp8hFl5AmT26pAmCrs1fBCFLiNMlzyYTwb6nn
+        #Access Token - 1346191428-q6m8k9KdEhgawEw56jZoTUqJL3IloKwn8RpqyH4
+        #Access Secret - yThR6z9lUpFc6G70IJrGRQ8MYGdQAwTyx3NaiQ89d7xDy
+
+myapp <- oauth_app("tweetCoursera", key = "66hKsADgbVB2bLMIUbVfeTG3k", secret = "tkt5XXlnWqa2PvnGyMxBKsSwhK9PQFHov7fXknfqfppZ8gKnG9")
+sig <- sign_oauth1.0(myapp, token = "1346191428-q6m8k9KdEhgawEw56jZoTUqJL3IloKwn8RpqyH4", token_secret = "yThR6z9lUpFc6G70IJrGRQ8MYGdQAwTyx3NaiQ89d7xDy")
+homeTL <- GET("https://api.twitter.com/1.1/statuses/home_timeline.json", sig)
+json1 <- content(homeTL)
+library(jsonlite)
+json2 <- jsonlite::fromJSON(toJSON(json1)) #converting from Robject to JSON to data frame using the jsonlite package
+json2[1,1:4]
+
+
+
