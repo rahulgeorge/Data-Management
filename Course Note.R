@@ -286,4 +286,70 @@ json2 <- jsonlite::fromJSON(toJSON(json1)) #converting from Robject to JSON to d
 json2[1,1:4]
 
 
+#Editing Text Variable
+list.files("./data")
+cameraData <- read.csv("./data/cameras.csv")
+names(cameraData)
+tolower(names(cameraData)) #to convert all names to lower case
+        #strsplit function can be used to seperate names containing "."
+
+fileUrl1 <- "https://dl.dropboxusercontent.com/u/7710864/data/reviews-apr29.csv"
+download.file(fileUrl1, destfile = "./data/reviews.csv", method = "curl")
+fileUrl2 <- "https://dl.dropboxusercontent.com/u/7710864/data/solutions-apr29.csv"
+download.file(fileUrl2, destfile = "./data/solutions.csv", method = "curl")
+reviews <- read.csv("./data/reviews.csv")
+solutions <- read.csv("./data/solutions.csv")
+head(reviews,2)
+
+names(review) #wotn work as file is misisng
+sub("_","",names(reviews)) #Substitues all underscores in names of review with nothing to remove them
+gsub("_","",testName) #Removes all underscores in a name. The above methos only removes the first one
+
+#Finding Values - grep(), grepl()
+
+grep("Alameda", cameraData$intersecti) #Searches for Alameda in the CameraData loaded earlier's intersection column
+table(grepl("Alameda", cameraData$intersecti)) #grepl returns True when alameda appears and False else. Here creating a table for the same
+cameraData2 <- cameraData[grepl("Alameda", cameraData$intersecti),] #Selects all rows where alameda is matched to a new variable
+ 
+grep("Alameda", cameraData$intersecti, value = TRUE) #This returns the values instead of the index  
+        #Check for length of grep to see if the search doesnt return anything. Length will be 0
+
+#useful string operations
+library(stringr)
+nchar("Rahul George") #Returns number of characters
+substr("Rahul George",1,7) #Takes values from first through 7
+paste("Rahul", "George")
+str_trim("Rahul       ") #Removes the spaces
+
+
+#Regular Expressions
+
+        #Metacharacters are used to identify scenarios more speific and more extensively than can be matched literally.
+        #Literally matching picks out specific instances of a word as searched
+
+        # ^ represents start of a line ^i think will only return sentences starting with ithink
+        # $ represents the end of the line, ex. morning$
+        # [Bb][Uu][Ss][Hh] will match all the possible cases of the word Bush
+        # ^[Ii] am will match all lines starting with I am with i in any case
+
+        #You can specify a range of letter using [a-z] or [a-zA-Z] or [0-9]
+
+        #When used inside the character class, ^ also means NOT
+        #[^?.]$ indicates serching lined that do not end with ? or .
+
+        # "." dot is a metacharacter as well which means it can be anything
+        #9.11 will search for all instances where dot can be anything (one character) inbetween 9 & 11. Ex. 9-11, 9/11, 103.169.114.66, 9:11 am
+        # Pipe opertor indicates or flood|fire indicates search for flood or fire. flood|earthquake|fire
+        # ^[Gg]ood|[Bb]ad searches for G/good in start of line and B/bad anywhere int he line
+        # ^([Gg]ood|[Bb]ad) both will be searched in beginning of the line
+        # question mark indicates that the expression is optional
+                #[Gg]eorge( [Ww]\.)? [Bb]ush - Will not necessarily need W in the middle to match
+                #the escape "\" is used to indicate that the dot is not a meta character in this expression
+
+
+
+
+
+
+
 
