@@ -118,7 +118,23 @@ rm("mydf")
 cran #Main use is printing. Check this out
  
  #dplyr supplies five 'verbs' that cover most fundamental data manipulation tasks: select(), filter(), arrange(), mutate(), and summarize().
- #subsetting columns using select
+#Rename column names
+chicago <- readRDS("./data/chicago.rds")
+str(chicago)
+names(chicago)
+chicago <- rename(chicago, pm25 = pm25tmean2, dewpoint = dptp) #Renames the variables pm25tmean2 to pm25 & dptp to dewpoint in DF chicago
+
+chicago <- mutate(chicago, tempcat2 = factor(tmpd > 80, labels = c("cold", "hot")))
+hotcold <- group_by(chicago, tempcat) #Groups by the tempcat factor
+
+summarise(hotcold, pm25 = mean(pm25), o3 = max(o3tmean2), no2 = median(no2tmean2)) #Summarises the new variables for both groups created by the factor variable
+summarise(hotcold, pm25 = mean(pm25, na.rm = TRUE), o3 = max(o3tmean2), no2 = median(no2tmean2)) #Removes the NA in the mean in the above statement
+
+chicago <- mutate(chicago, year = as.POSIXlt(date)$year + 1900)
+years <- group_by(chicago, year)
+summarise(years, pm25 = mean(pm25, na.rm = TRUE), o3 = max(o3tmean2), no2 = median(no2tmean2))
+
+#subsetting columns using select
 select(cran, ip_id, package, country) #Selects just these columns
 select(cran, r_arch:country) #selects all columns from r_arch to country, similar to operating on numbers 1:5
 select(cran, country:r_arch)
@@ -347,9 +363,135 @@ str_trim("Rahul       ") #Removes the spaces
                 #the escape "\" is used to indicate that the dot is not a meta character in this expression
 
 
+#Subsetting and Sorting
+
+set.seed(13435)
+x <- data.frame("var1" = sample(1:5), "var2" = sample(6:10), "var3" = sample(11:15))
+x <- x[sample(1:5),]
+x$var2[c(1,3)] <- NA
+
+x[,1]
+x[,"var1"]
+x[1:2,"var2"]
+x[(x$var1 <= 3 & x$var3 >11),]
+x[(x$var1 <= 3 | x$var3 >15),]
+x[x$var2>8,] #Has problem dealing with NA
+x[which(x$var2 >8),] #Use which() to deal with NA
+
+sort(x$var1)
+sort(x$var1, decreasing = TRUE)
+sort(x$var2, na.last = TRUE)
+
+x[order(x$var1, x$var3),] #To order a dataframe 
+
+        #plyr package
+library(dplyr)
+arrange(x,var1)
+
+        #Adding rows and columns
+x$var4 <- rnorm(5)
+y <- cbind(x,rnorm(5)) #Binds at the right
+y <- cbind(rnorm(5),y) #Binds at the left
+y
+
+        #Baltimore City Data
+restData <- read.csv("./data/Restaurants.csv")
+head(restData,n=3)
+quantile(restData$cncldst, na.rm = TRUE)
+quantile(restData$cncldst, probs = c(0.25,0.5,0.75,0.99))
+
+table(restData$zipcode, useNA = "ifany") #useNA = IfAny will show the count of missing values as well. By default this is ommitted
+table(restData$cncldst, restData$zipcode) #Creates a 2 dimensional table
+
+        #Checking for missing values
+sum(is.na(restData$cncldst)) #Returns the count of missing values
+any(is.na(restData$cncldst)) 
+all(restData$zipcode > 0) #Checks if all zipcode values are > 0
+colSums(is.na(restData)) #Giuves count of NA for every column
+
+table(restData$zipcode %in% c("21212", "21213"))
+restData[restData$zipcode %in% c("21212", "21213"),] #Subsets the DF using the logical operator
+
+        #Working with UC Berkley Admissions data
+data("UCBAdmissions")
+DF <- as.data.frame(UCBAdmissions)
+str(DF)
+summary(DF)
+
+xt <- xtabs(Freq ~ Gender + Admit, data = DF) #Creates a table where Freq's information is shown within the table and Gender and Admin are on both axis
+xt 
+object.size(xt)
 
 
+#Creating New Variables
+restData <- read.csv(("./data/Restaurants.csv"))
+        #Creating sequences
+s1 <- seq(1,10,by=2) #Creates a sequence s1 with min value 1 & max value 10 and increaing each by 2
+s2 <-seq(1,10,length = 3) #length of the sequenmce will eb 3
+
+restData$nearMe <- restData$nghbrhd %in% c("Roland Park", "Homeland")
+table(restData$nearMe)
+restData$zipWrong <- ifelse(restData$zipcode < 0, TRUE, FALSE) #ifelse function definition
+table(restData$zipWrong, restData$zipcode < 0) #Table between the new variable and a condition to check if it came properly
+
+        #Creating categorical variables
+restData$zipcode <- as.numeric(restData$zipcode)
+restData$zipGroups <- cut(restData$zipcode, breaks = quantile(restData$zipcode, na.rm = TRUE)) #Cut command to break it up to some value (quantiles of zipcode). Returns a factor variabel
+table(restData$zipGroups)
+table(restData$zipGroups, restData$zipcode)
+
+library(Hmisc)
+restData$zipGroups <- cut2(restData$zipcode,g=4)
+
+        #Creating Factor Variables
+restData$zcf <- factor(restData$zipcode) #Creating a factor variable
+restData$zcf[1:10]
+yesno <- sample(c("yes","no"), size = 10, replace = TRUE)
+yesnofac <- factor(yesno, levels = c("yes","no"))
+relevel(yesnofac, ref = "yes") #Relevels the factor vairbale startying with yes. Not needed in this case.
+as.numeric(yesnofac)
 
 
+#Reshaping Data
 
+library(reshape2)
+head(mtcars)
+
+        #Melting Data Set
+mtcars$carname <- rownames(mtcars)
+carMelt <- melt(mtcars, id = c("carname", "gear", "cyl"), measure.vars = c("mpg","hp")) #Creates a skinned down data set for ID values as 
+                                                                                        #given with a separate row for each variable value defined
+head(carMelt)
+tail(carMelt)
+
+        #Castind Data Set
+cylData <- dcast(carMelt, cyl ~ variable)
+cylData
+cylData <- dcast(carMelt, cyl ~ variable, mean) #Taking the data set and reorganising it in different ways.
+cylData
+
+        #Averaging values
+head(InsectSprays)
+tapply(InsectSprays$count, InsectSprays$spray, sum)
+spIns <- split(InsectSprays$count, InsectSprays$spray) #Another way - splitting
+spIns 
+sprCount <- lapply(spIns, sum)
+sprCount
+sapply(spIns, sum)
+
+        #Plyr Package
+library(plyr)
+ddply(InsectSprays, .(spray), summarize, sum = sum(count))
+
+
+#Merging Data 
+reviews <- read.csv("./data/reviews.csv")
+solutions <- read.csv("./data/solutions.csv")
+head(reviews)
+head(solutions)
+names(reviews)
+names(solutions)
+
+mergedData <- merge(reviews, solutions, by.x = "solution_id", by.y = "id", all = TRUE)
+head(mergedData)
 
