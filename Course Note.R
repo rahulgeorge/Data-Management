@@ -184,6 +184,18 @@ cran %>% #This operator is used to chain commands
         arrange(desc(size_mb)) %>% 
         print #Print doesnt need the function paranthesis in chaining
 
+#Tidying Data with dplyr
+by_package <- group_by(cran, package)
+pack_sum <- summarize(by_package,
+                      count = n(),
+                      unique = n_distinct(ip_id),
+                      countries = n_distinct(country),
+                      avg_bytes = mean(size))
+
+quantile(pack_sum$count, probs = 0.99) #Calculating the top 1% or 99th percentile
+top_counts <- filter(pack_sum, count > 679)
+View(top_counts) #Provides a full view
+
 
 #Reading from MySQL
 
