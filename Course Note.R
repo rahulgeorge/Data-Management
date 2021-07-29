@@ -1,4 +1,16 @@
 #Starting course on July 4th
+
+#-----------------------------------------------------------------------------
+#Data Sources
+
+#United Nations - data.un.org
+#Country Data - data.gov + data.gov/opendatasites #WOW
+#Gapminder - Lot of data on human data
+#Kaggle
+
+#-----------------------------------------------------------------------------
+
+#Managing Files
 dir.create("data") #Creates a new directory - data
 dir.exists("data") #Checks if the current directory has a child directory data
 
@@ -314,66 +326,6 @@ json2 <- jsonlite::fromJSON(toJSON(json1)) #converting from Robject to JSON to d
 json2[1,1:4]
 
 
-#Editing Text Variable
-list.files("./data")
-cameraData <- read.csv("./data/cameras.csv")
-names(cameraData)
-tolower(names(cameraData)) #to convert all names to lower case
-        #strsplit function can be used to seperate names containing "."
-
-fileUrl1 <- "https://dl.dropboxusercontent.com/u/7710864/data/reviews-apr29.csv"
-download.file(fileUrl1, destfile = "./data/reviews.csv", method = "curl")
-fileUrl2 <- "https://dl.dropboxusercontent.com/u/7710864/data/solutions-apr29.csv"
-download.file(fileUrl2, destfile = "./data/solutions.csv", method = "curl")
-reviews <- read.csv("./data/reviews.csv")
-solutions <- read.csv("./data/solutions.csv")
-head(reviews,2)
-
-names(review) #wotn work as file is misisng
-sub("_","",names(reviews)) #Substitues all underscores in names of review with nothing to remove them
-gsub("_","",testName) #Removes all underscores in a name. The above methos only removes the first one
-
-#Finding Values - grep(), grepl()
-
-grep("Alameda", cameraData$intersecti) #Searches for Alameda in the CameraData loaded earlier's intersection column
-table(grepl("Alameda", cameraData$intersecti)) #grepl returns True when alameda appears and False else. Here creating a table for the same
-cameraData2 <- cameraData[grepl("Alameda", cameraData$intersecti),] #Selects all rows where alameda is matched to a new variable
- 
-grep("Alameda", cameraData$intersecti, value = TRUE) #This returns the values instead of the index  
-        #Check for length of grep to see if the search doesnt return anything. Length will be 0
-
-#useful string operations
-library(stringr)
-nchar("Rahul George") #Returns number of characters
-substr("Rahul George",1,7) #Takes values from first through 7
-paste("Rahul", "George")
-str_trim("Rahul       ") #Removes the spaces
-
-
-#Regular Expressions
-
-        #Metacharacters are used to identify scenarios more speific and more extensively than can be matched literally.
-        #Literally matching picks out specific instances of a word as searched
-
-        # ^ represents start of a line ^i think will only return sentences starting with ithink
-        # $ represents the end of the line, ex. morning$
-        # [Bb][Uu][Ss][Hh] will match all the possible cases of the word Bush
-        # ^[Ii] am will match all lines starting with I am with i in any case
-
-        #You can specify a range of letter using [a-z] or [a-zA-Z] or [0-9]
-
-        #When used inside the character class, ^ also means NOT
-        #[^?.]$ indicates serching lined that do not end with ? or .
-
-        # "." dot is a metacharacter as well which means it can be anything
-        #9.11 will search for all instances where dot can be anything (one character) inbetween 9 & 11. Ex. 9-11, 9/11, 103.169.114.66, 9:11 am
-        # Pipe opertor indicates or flood|fire indicates search for flood or fire. flood|earthquake|fire
-        # ^[Gg]ood|[Bb]ad searches for G/good in start of line and B/bad anywhere int he line
-        # ^([Gg]ood|[Bb]ad) both will be searched in beginning of the line
-        # question mark indicates that the expression is optional
-                #[Gg]eorge( [Ww]\.)? [Bb]ush - Will not necessarily need W in the middle to match
-                #the escape "\" is used to indicate that the dot is not a meta character in this expression
-
 
 #Subsetting and Sorting
 
@@ -506,4 +458,113 @@ names(solutions)
 
 mergedData <- merge(reviews, solutions, by.x = "solution_id", by.y = "id", all = TRUE)
 head(mergedData)
+
+
+
+#Editing Text Variable
+list.files("./data")
+cameraData <- read.csv("./data/cameras.csv")
+names(cameraData)
+tolower(names(cameraData)) #to convert all names to lower case
+#strsplit function can be used to seperate names containing "."
+
+fileUrl1 <- "https://dl.dropboxusercontent.com/u/7710864/data/reviews-apr29.csv"
+download.file(fileUrl1, destfile = "./data/reviews.csv", method = "curl")
+fileUrl2 <- "https://dl.dropboxusercontent.com/u/7710864/data/solutions-apr29.csv"
+download.file(fileUrl2, destfile = "./data/solutions.csv", method = "curl")
+reviews <- read.csv("./data/reviews.csv")
+solutions <- read.csv("./data/solutions.csv")
+head(reviews,2)
+
+names(reviews) 
+sub("_","",names(reviews)) #Substitues all underscores in names of review with nothing to remove them
+gsub("_","",testName) #Removes all underscores in a name. The above method only removes the first one
+
+#Finding Values - grep(), grepl()
+
+grep("Alameda", cameraData$intersecti) #Searches for Alameda in the CameraData loaded earlier's intersection column
+table(grepl("Alameda", cameraData$intersecti)) #grepl returns True when alameda appears and False else. Here creating a table for the same
+cameraData2 <- cameraData[grepl("Alameda", cameraData$intersecti),] #Selects all rows where alameda is matched to a new variable
+
+grep("Alameda", cameraData$intersecti, value = TRUE) #This returns the values instead of the index  
+#Check for length of grep to see if the search doesnt return anything. Length will be 0
+
+#useful string operations
+library(stringr)
+nchar("Rahul George") #Returns number of characters
+substr("Rahul George",1,7) #Takes values from first through 7
+paste("Rahul", "George")
+str_trim("Rahul       ") #Removes the spaces
+
+
+#Regular Expressions
+
+        #Metacharacters are used to identify scenarios more speific and more extensively than can be matched literally.
+        #Literally matching picks out specific instances of a word as searched
+        
+        # ^ represents start of a line ^i think will only return sentences starting with ithink
+        # $ represents the end of the line, ex. morning$
+        # [Bb][Uu][Ss][Hh] will match all the possible cases of the word Bush
+        # ^[Ii] am will match all lines starting with I am with i in any case
+        
+        #You can specify a range of letter using [a-z] or [a-zA-Z] or [0-9]
+        
+        #When used inside the character class, ^ also means NOT
+        #[^?.]$ indicates serching lined that do not end with ? or .
+        
+        # "." dot is a metacharacter as well which means it can be anything
+        #9.11 will search for all instances where dot can be anything (one character) inbetween 9 & 11. Ex. 9-11, 9/11, 103.169.114.66, 9:11 am
+        # Pipe opertor indicates or flood|fire indicates search for flood or fire. flood|earthquake|fire
+        # ^[Gg]ood|[Bb]ad searches for G/good in start of line and B/bad anywhere int he line
+        # ^([Gg]ood|[Bb]ad) both will be searched in beginning of the line
+        # question mark indicates that the expression is optional
+        #[Gg]eorge( [Ww]\.)? [Bb]ush - Will not necessarily need W in the middle to match
+                #the escape "\" is used to indicate that the dot is not a meta character in this expression
+        #(.*) * means any number, including none of the item 
+                #(24, m, germany) or () both will match for the above
+        # * is a greedy operator and will check for the longest possible match
+                # ^s(.*)s will look for the longest expression between two s and wont consider if there is an s in between 2 s
+                # ^s(.*?)s will reduce the greediness. not sure how!!
+        # + means atleast one of the item
+                #[0-9]+ (.*)[0-9]+ means atleast one number followed by another number with any charactwrs in between
+        # {} are interval quantifiers that specify the minimum and maximum number of matches of an experession
+                #[Bb]ush( +[^ ]+ +){1,5} debate will match all instances where Bush and debate is seperated by atleast 1 space
+                #followed by something not a space followed by a space and will allow for 1 to 5 repeates of that type
+                #In curly operator {m,n} is atleast m and not more than n, {m} means exactly m, {m,} means atleast m
+        # \1 or \2 etc is used to remember the expression matched in ()
+                # +([a-zA-Z]+) +\1 will match lines good night night baby or blah blah blah blah etc
+
+
+#Working with Dates
+
+d1 <- date()
+d1
+class(d1) #Character
+
+d2 <- Sys.Date()
+d2
+class(d2) #Date
+
+        # %d = day as number(0-31), %a = abbreviated weekday, %A = unabbreviated weekday, %m = month (00-12) 
+        # %b = abbreviated month, %B = unabbreviated Month, %y = 2 digit year, %Y = four digit year
+
+format(d2, "%a %b %d") #"Thu Jul 29"
+
+x = c("1jan1960", "2jan1960","31mar1960","30jul1960")
+z <- as.Date(x, "%d%b%Y")
+z
+z[1] - z[2]
+as.numeric(z[1]-z[2])
+
+weekdays(d2)
+months(d2)
+julian(d2)
+
+library(lubridate) #Very useful to work with dates
+ymd("20140108")
+mdy("08/04/2013")
+mdy("08042013")
+dmy("03-04-2013")
+ymd_hms("2011-08-03 10:15:03")
+ymd_hms("2011-08-03 10:15:03", tz = "Pacific/Auckland")
 
