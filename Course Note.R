@@ -562,9 +562,27 @@ julian(d2)
 
 library(lubridate) #Very useful to work with dates
 ymd("20140108")
+ymd("1989 May 17")
+ymd("1920/1/2")
 mdy("08/04/2013")
 mdy("08042013")
 dmy("03-04-2013")
 ymd_hms("2011-08-03 10:15:03")
-ymd_hms("2011-08-03 10:15:03", tz = "Pacific/Auckland")
+ymd_hms("2011-08-03 10:15:03", tz = "Pacific/Auckland") #All timezones can be found at http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+hms("03:22:14")
 
+
+this_day <- today()
+wday(this_day)
+wday(this_day, label = TRUE)
+
+this_moment <- now()
+nyc <- now(tz = "America/New_York")
+depart <- nyc + days(2)
+depart <- update(depart, hours = 17, minutes = 34)
+arrive <- depart + hours(15) + minutes(50)
+arrive <- with_tz(arrive, tzone = "Asia/Hong_Kong") #Converting to Hong Kong timezone
+
+last_time <- mdy("June 17, 2008", tz = "Singapore")
+how_long <- interval(start = last_time, end = arrive) #Finding the interval between last time and arrival time
+as.period(how_long)
